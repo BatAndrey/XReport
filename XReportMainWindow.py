@@ -19,9 +19,9 @@ class XReportMainWindow(QMainWindow):
         self.read_config(file_name='config.ini')
         self.initGui()
         self.exchange_templates_combo()
-        self.set_text_templates()
+        #self.set_text_templates()
         self.set_timer_connect_email()
-        self.action_with_settings()
+        #self.action_with_settings()
 
     def read_config(self, file_name):
         config = configparser.ConfigParser()
@@ -74,6 +74,7 @@ class XReportMainWindow(QMainWindow):
         self.file_menu = self.menuBar().addMenu('File')
 
         self.show_settings_action = QAction('Settings')
+        self.show_settings_action.triggered.connect(self.show_settings)
         self.file_menu.addAction(self.show_settings_action)
 
     def exchange_templates_combo(self):
@@ -121,11 +122,11 @@ class XReportMainWindow(QMainWindow):
         self.settings_widget.setAttribute(Qt.WA_DeleteOnClose)
         self.settings_widget.settings_changed.connect(self.apply_settings)
 
-    def action_with_settings(self):
-        self.show_settings_action.triggered.connect(self.show_settings)
+    # def action_with_settings(self):
+    #     self.show_settings_action.triggered.connect(self.show_settings)
 
-    def apply_settings(self, freq):
-        #self.tmpl_dir_path = dir_path
+    def apply_settings(self, freq, dir_path):
+        self.tmpl_dir_path = dir_path
         self.check_frequency = freq
         #print('apply settings', self.tmpl_dir_path)
         print('apply settings')

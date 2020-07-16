@@ -9,7 +9,8 @@ from PyQt5.QtCore import (QTimer)
 
 
 class SettingsWidget(QWidget):
-    settings_changed = pyqtSignal(int)
+    settings_changed = pyqtSignal(int, str)
+    #settings_changed_dir = pyqtSignal(str)
     settings_cancel = pyqtSignal()
     def __init__(self):
         super().__init__()
@@ -23,7 +24,7 @@ class SettingsWidget(QWidget):
 
         self.frequency_lable = QLabel('Check_frequency:')
         self.frequency_spin_box = QSpinBox()
-        self.frequency_spin_box.setRange(1000, 10000)
+        self.frequency_spin_box.setRange(500, 10000)
         self.frequency_spin_box.setSingleStep(250)
 
         self.ok_btn = QPushButton("SAVE")
@@ -48,7 +49,8 @@ class SettingsWidget(QWidget):
         #self.ok_btn.pressed.connect(self.on_ok_btn)
 
     def on_ok_btn(self):
-        self.settings_changed.emit(self.frequency_spin_box.value())
+        self.settings_changed.emit(self.frequency_spin_box.value(), self.dir_line.text())
+        #self.settings_changed_dir.emit(self.dir_line.text())
         self.deleteLater()
         self.close()
 

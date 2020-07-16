@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QTextEdit, QComboBox, QVBoxLayout, QHBoxLayout,
@@ -8,7 +9,7 @@ from PyQt5.QtCore import (QTimer)
 
 
 class SettingsWidget(QWidget):
-    settings_changed = pyqtSignal(int, str)
+    settings_changed = pyqtSignal(int)
     settings_cancel = pyqtSignal()
     def __init__(self):
         super().__init__()
@@ -47,7 +48,7 @@ class SettingsWidget(QWidget):
         #self.ok_btn.pressed.connect(self.on_ok_btn)
 
     def on_ok_btn(self):
-        self.settings_changed.emit(self.frequency_spin_box.value(), self.dir_line.text())
+        self.settings_changed.emit(self.frequency_spin_box.value())
         self.deleteLater()
         self.close()
 

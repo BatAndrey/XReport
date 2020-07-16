@@ -102,15 +102,15 @@ class XReportMainWindow(QMainWindow):
     def check_email(self):
         print('mail exist')
         self.statusBar().showMessage('Checking mail...', 2000)
-        connection = ConnectionEmail()
-        if connection.exist_unread_msg():
-            #self.statusBar().showMessage('Unread message exist')
-            self.statusBar().messageChanged('Unread message exist')
-            connection.download_msg()
-            connection.close()
-        else:
-            print('Unread message unexist')
-            connection.close()
+        # connection = ConnectionEmail()
+        # if connection.exist_unread_msg():
+        #     #self.statusBar().showMessage('Unread message exist')
+        #     self.statusBar().messageChanged('Unread message exist')
+        #     connection.download_msg()
+        #     connection.close()
+        # else:
+        #     print('Unread message unexist')
+        #     connection.close()
 
     def ok_btn_connect_email(self):
         self.btn_connect.clicked.connect(self.check_email)
@@ -124,10 +124,11 @@ class XReportMainWindow(QMainWindow):
     def action_with_settings(self):
         self.show_settings_action.triggered.connect(self.show_settings)
 
-    def apply_settings(self, freq, dir_path):
-        self.tmpl_dir_path = dir_path
+    def apply_settings(self, freq):
+        #self.tmpl_dir_path = dir_path
         self.check_frequency = freq
-        print('apply settings', self.tmpl_dir_path)
+        #print('apply settings', self.tmpl_dir_path)
+        print('apply settings')
         self.timer_connect_email.start(self.check_frequency)
         #dir_path_write = open('config.ini', 'a')
         #dir_path_write.writelines('\ndir_path={}'.format(self.tmpl_dir_path))

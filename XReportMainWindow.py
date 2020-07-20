@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import time
 import configparser
 import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox, QTextEdit, QPushButton, QAction, QMainWindow, \
-    QLineEdit, QApplication, QLayout, QVBoxLayout, QHBoxLayout, QWidget, QFrame, QFormLayout, QStatusBar
+    QLineEdit, QApplication, QLayout, QVBoxLayout, QHBoxLayout, QWidget, QFrame, QFormLayout, QStatusBar, QProgressDialog
 from PyQt5.QtCore import (QTimer)
 import XReportSettings
+import XReportSaveMenu
 
 class XReportMainWindow(QMainWindow):
     tmpl_dir_path = ''
@@ -19,9 +21,7 @@ class XReportMainWindow(QMainWindow):
         self.read_config(file_name='config.ini')
         self.initGui()
         self.exchange_templates_combo()
-        self.set_text_templates()
         self.set_timer_connect_email()
-        self.action_with_settings()
 
     def read_config(self, file_name):
         config = configparser.ConfigParser()
@@ -32,7 +32,6 @@ class XReportMainWindow(QMainWindow):
     def initGui(self):
         self.main_window = QWidget()
         self.timer_connect_email = QTimer()
-
 
         self.setGeometry(400, 400, 700, 400)
         self.setWindowTitle('X-Report')
@@ -64,6 +63,7 @@ class XReportMainWindow(QMainWindow):
         self.data.setInputMask("Дата приема: 99.B9.9999; _")
         self.age.setInputMask("Дата рождения: 99.B9.9999; _")
 
+
         self.hbox_all = QHBoxLayout()
         self.hbox_all.addLayout(self.vbox_text_combo)
         self.hbox_all.addLayout(self.form_person)
@@ -74,7 +74,32 @@ class XReportMainWindow(QMainWindow):
         self.file_menu = self.menuBar().addMenu('File')
 
         self.show_settings_action = QAction('Settings')
+        self.show_save_action = QAction('Save')
+
+        self.show_settings_action.triggered.connect(self.show_settings)
         self.file_menu.addAction(self.show_settings_action)
+        #self.show_save_action.triggered.connect(self.show_save)
+        self.show_save_action.triggered.connect(self.save_to_file)
+        self.file_menu.addAction(self.show_save_action)
+
+        self.progress_dialog = QProgressDialog("Operation in progress.", "Cancel", 0, 100)
+        self.progress_dialog.show()
+        time.sleep(5)
+        self.progress_dialog.canceled.connect(self.cancel)
+        self.timer_download = QTimer(self)
+        self.timer_download.timeout.connect(self.perform)
+        self.timer_download.start(0)
+
+    def perform(self):
+        self.progress_dialog.setValue(self.steps)
+        time.sleep(10)
+        # ... perform one percent of the operation
+        self.steps += 1
+        if self.steps > self.progress_dialog.maximum():
+            self.timer_download.stop()
+
+    def cancel(self):
+        self.timer_download.stop()
 
     def exchange_templates_combo(self):
         item_for_combo = ['ogk', 'bone', 'air']
@@ -102,15 +127,15 @@ class XReportMainWindow(QMainWindow):
     def check_email(self):
         print('mail exist')
         self.statusBar().showMessage('Checking mail...', 2000)
-        connection = ConnectionEmail()
-        if connection.exist_unread_msg():
-            #self.statusBar().showMessage('Unread message exist')
-            self.statusBar().messageChanged('Unread message exist')
-            connection.download_msg()
-            connection.close()
-        else:
-            print('Unread message unexist')
-            connection.close()
+        # connection = ConnectionEmail()
+        # if connection.exist_unread_msg():
+        #     #self.statusBar().showMessage('Unread message exist')
+        #     self.statusBar().messageChanged('Unread message exist')
+        #     connection.download_msg()
+        #     connection.close()
+        # else:
+        #     print('Unread message unexist')
+        #     connection.close()
 
     def ok_btn_connect_email(self):
         self.btn_connect.clicked.connect(self.check_email)
@@ -121,17 +146,56 @@ class XReportMainWindow(QMainWindow):
         self.settings_widget.setAttribute(Qt.WA_DeleteOnClose)
         self.settings_widget.settings_changed.connect(self.apply_settings)
 
-    def action_with_settings(self):
-        self.show_settings_action.triggered.connect(self.show_settings)
-
     def apply_settings(self, freq, dir_path):
         self.tmpl_dir_path = dir_path
         self.check_frequency = freq
-        print('apply settings', self.tmpl_dir_path)
+        print('apply settings')
         self.timer_connect_email.start(self.check_frequency)
-        #dir_path_write = open('config.ini', 'a')
-        #dir_path_write.writelines('\ndir_path={}'.format(self.tmpl_dir_path))
-        #dir_path_write.close()
+
+    def show_save(self):
+        self.save_wedget = XReportSaveMenu.SaveMenu()
+        self.save_wedget.show()
+        self.save_wedget.setAttribute(Qt.WA_DeleteOnClose)
+        self.save_wedget.settings_changed.connect(self.apply_save)
+
+    def apply_save(self):
+        pass
+
+    # def save_to_file(self):
+    #     self.writeFile = open("text.txt", 'w', encoding='utf-8')
+    #     self.writeFile.write(self.templ_text_edid.toPlainText())
+    #     self.writeFile.close()
+
+    def save_to_file(self):
+        options = QtWidgets.QFileDialog()
+        self.fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", r'C:\Users\a.batischev\Desktop\templ\report_redy', "All (*);;Text Files (*.txt)", options=options)
+        if self.fileName:
+            self.writeFile = open(self.fileName, 'w', encoding='utf-8')
+            self.writeFile.write(self.templ_text_edid.toPlainText())
+            self.writeFile.close()
+            self.statusbar.showMessage('Saved to %s' % self.fileName)
+
+    # def save_to_file(self):
+    #     options = QtWidgets.QFileDialog.Options()
+    #     self.fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", "", "Text Files (*.txt)", options=options)
+    #     if self.fileName:
+    #         self.writeFile = open(self.fileName, 'w', encoding='utf-8')
+    #         self.writeFile.write(self.ui.plainTextEdit.toPlainText())
+    #         self.writeFile.close()
+    #         self.ui.statusbar.showMessage('Saved to %s' % self.fileName)
+
+    # def save_to_file(self):
+    #     #save_dialog = QtWidgets.QFileDialog()
+    #     options = QtWidgets.QFileDialog.Options()
+    #     self.fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", "", "Text Files (*.txt)",
+    #                                                           options=options,
+    #                                                           directory=r'C:\Users\a.batischev\Desktop\templ\report_redy')
+    #     if self.fileName:
+    #         self.writeFile = open(self.fileName, 'w', encoding='utf-8')
+    #         self.writeFile.write(self.templ_text_edid.toPlainText())
+    #         self.writeFile.close()
+    #         self.statusbar.showMessage('Saved to %s' % self.fileName)
+
 
 
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import docx
+from docx.document import Document
 import time
 import configparser
 import os
@@ -12,6 +14,8 @@ from PyQt5.QtCore import (QTimer)
 import XReportSettings
 import XReportSaveMenu
 
+dir_templ = r'C:\Users\a.batischev\Desktop\templ\templ2.docx'
+
 class XReportMainWindow(QMainWindow):
     tmpl_dir_path = ''
     check_frequence = 2000
@@ -21,7 +25,8 @@ class XReportMainWindow(QMainWindow):
         self.read_config(file_name='config.ini')
         self.initGui()
         self.exchange_templates_combo()
-        self.set_timer_connect_email()
+        # self.set_timer_connect_email()
+        self.ok_btn_compile_report()
 
     def read_config(self, file_name):
         config = configparser.ConfigParser()
@@ -35,6 +40,8 @@ class XReportMainWindow(QMainWindow):
 
         self.setGeometry(400, 400, 700, 400)
         self.setWindowTitle('X-Report')
+
+        #self.doc = docx.Document(dir_templ)
 
         self.templ_text_edid = QTextEdit()
         self.templ_combo_box = QComboBox()
@@ -63,6 +70,8 @@ class XReportMainWindow(QMainWindow):
         self.data.setInputMask("Дата приема: 99.B9.9999; _")
         self.age.setInputMask("Дата рождения: 99.B9.9999; _")
 
+        self.doctor.setText("Ксения Константиновна")
+
 
         self.hbox_all = QHBoxLayout()
         self.hbox_all.addLayout(self.vbox_text_combo)
@@ -82,24 +91,9 @@ class XReportMainWindow(QMainWindow):
         self.show_save_action.triggered.connect(self.save_to_file)
         self.file_menu.addAction(self.show_save_action)
 
-        self.progress_dialog = QProgressDialog("Operation in progress.", "Cancel", 0, 100)
-        self.progress_dialog.show()
-        time.sleep(5)
-        self.progress_dialog.canceled.connect(self.cancel)
-        self.timer_download = QTimer(self)
-        self.timer_download.timeout.connect(self.perform)
-        self.timer_download.start(0)
-
-    def perform(self):
-        self.progress_dialog.setValue(self.steps)
-        time.sleep(10)
-        # ... perform one percent of the operation
-        self.steps += 1
-        if self.steps > self.progress_dialog.maximum():
-            self.timer_download.stop()
-
-    def cancel(self):
-        self.timer_download.stop()
+        # self.progress_dialog = QProgressDialog("Operation in progress.", "Cancel", 0, 100)
+        # self.progress_dialog.show()
+        # self.progress_dialog.startTimer(10)
 
     def exchange_templates_combo(self):
         item_for_combo = ['ogk', 'bone', 'air']
@@ -120,25 +114,25 @@ class XReportMainWindow(QMainWindow):
         file_for_read.close()
         return ' '.join(tmp_text)
 
-    def set_timer_connect_email(self):
-        self.timer_connect_email.timeout.connect(self.check_email)
-        self.timer_connect_email.start(self.check_frequence)
+    # def set_timer_connect_email(self):
+    #     self.timer_connect_email.timeout.connect(self.check_email)
+    #     self.timer_connect_email.start(self.check_frequence)
 
-    def check_email(self):
-        print('mail exist')
-        self.statusBar().showMessage('Checking mail...', 2000)
-        # connection = ConnectionEmail()
-        # if connection.exist_unread_msg():
-        #     #self.statusBar().showMessage('Unread message exist')
-        #     self.statusBar().messageChanged('Unread message exist')
-        #     connection.download_msg()
-        #     connection.close()
-        # else:
-        #     print('Unread message unexist')
-        #     connection.close()
+    # def check_email(self):
+    #     print('mail exist')
+    #     self.statusBar().showMessage('Checking mail...', 2000)
+    #     # connection = ConnectionEmail()
+    #     # if connection.exist_unread_msg():
+    #     #     #self.statusBar().showMessage('Unread message exist')
+    #     #     self.statusBar().messageChanged('Unread message exist')
+    #     #     connection.download_msg()
+    #     #     connection.close()
+    #     # else:
+    #     #     print('Unread message unexist')
+    #     #     connection.close()
 
-    def ok_btn_connect_email(self):
-        self.btn_connect.clicked.connect(self.check_email)
+    # def ok_btn_connect_email(self):
+    #     self.btn_connect.clicked.connect(self.check_email)
 
     def show_settings(self):
         self.settings_widget = XReportSettings.SettingsWidget()
@@ -161,11 +155,6 @@ class XReportMainWindow(QMainWindow):
     def apply_save(self):
         pass
 
-    # def save_to_file(self):
-    #     self.writeFile = open("text.txt", 'w', encoding='utf-8')
-    #     self.writeFile.write(self.templ_text_edid.toPlainText())
-    #     self.writeFile.close()
-
     def save_to_file(self):
         options = QtWidgets.QFileDialog()
         self.fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", r'C:\Users\a.batischev\Desktop\templ\report_redy', "All (*);;Text Files (*.txt)", options=options)
@@ -175,26 +164,30 @@ class XReportMainWindow(QMainWindow):
             self.writeFile.close()
             self.statusbar.showMessage('Saved to %s' % self.fileName)
 
-    # def save_to_file(self):
-    #     options = QtWidgets.QFileDialog.Options()
-    #     self.fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", "", "Text Files (*.txt)", options=options)
-    #     if self.fileName:
-    #         self.writeFile = open(self.fileName, 'w', encoding='utf-8')
-    #         self.writeFile.write(self.ui.plainTextEdit.toPlainText())
-    #         self.writeFile.close()
-    #         self.ui.statusbar.showMessage('Saved to %s' % self.fileName)
 
-    # def save_to_file(self):
-    #     #save_dialog = QtWidgets.QFileDialog()
-    #     options = QtWidgets.QFileDialog.Options()
-    #     self.fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save To File", "", "Text Files (*.txt)",
-    #                                                           options=options,
-    #                                                           directory=r'C:\Users\a.batischev\Desktop\templ\report_redy')
-    #     if self.fileName:
-    #         self.writeFile = open(self.fileName, 'w', encoding='utf-8')
-    #         self.writeFile.write(self.templ_text_edid.toPlainText())
-    #         self.writeFile.close()
-    #         self.statusbar.showMessage('Saved to %s' % self.fileName)
+    def ok_btn_compile_report(self):
+        print('press compile btn')
+        self.btn_compile_report.pressed.connect(self.compil_report)
+
+    def compil_report(self):
+        # print('work slots')
+        # get_date = self.data.text()
+        # #print('date', get_date)
+        # get_inicial = self.inicialis.text()
+        # #print('inicials', get_inicial)
+        # get_doctor = self.doctor.text()
+        # get_text = self.templ_text_edid.toPlainText()
+
+        self.doc = docx.Document(dir_templ)
+
+        self.doc.add_paragraph(self.data.text() + '\n')
+        self.doc.add_paragraph(self.inicialis.text() + '\n')
+        self.doc.add_paragraph(self.age.text() + '\n')
+        self.doc.add_paragraph(self.templ_text_edid.toPlainText() + '\n')
+        self.doc.add_paragraph(self.doctor.text())
+
+        self.doc.save('temple22.docx')
+
 
 
 
